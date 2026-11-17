@@ -1,7 +1,7 @@
 import os
 import json
 import ssl
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
 import paho.mqtt.client as mqtt
 import google.generativeai as genai
@@ -20,10 +20,10 @@ TOPIC_PC_CMD = f"cactus/{MQTT_SALT}/pc/cmd"
 TOPIC_PC_RES = f"cactus/{MQTT_SALT}/pc/res"
 TOPIC_TELEMETRY = f"cactus/{MQTT_SALT}/telemetry"
 
-# Initialize Gemini
+# Initialize Gemini with gemini-2.5-flash
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash")
 else:
     model = None
 
@@ -50,15 +50,15 @@ def health():
     """Endpoint for UptimeRobot 5-minute keep-alive."""
     return {
         "status": "online",
-        "system": "Cactus AI Cloud Brain",
-        "mqtt_connected": mqtt_client is not None,
-        "gemini_ready": model is not None
+        "system": "Cactus AI Cloud Brain 24/7",
+        "gemini_ready": model is not None,
+        "mqtt_connected": mqtt_client is not None
     }
 
 @app.post("/execute")
 def execute_command(req: CommandRequest):
     if not model:
-        return {"error": "GEMINI_API_KEY is not set."}
+        return {"error": "GEMINI_API_KEY is not set in Environment Variables."}
     
     prompt = f"""
     You are Cactus AI Operator, controlling the user's PC and Phone.
